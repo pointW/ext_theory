@@ -621,11 +621,9 @@ def plotTDErrors():
     plt.show()
 
 def plotLoss(base, step, name='model_holdout_losses'):
+    vmin = 1
     colors = "bgrycmkw"
     method_map = {
-        'mlp': 'MLP',
-        'dssz': 'INV',
-        'invz': 'INV',
     }
     i = 0
 
@@ -648,7 +646,7 @@ def plotLoss(base, step, name='model_holdout_losses'):
                 # test_loss.append(np.sort(r)[:5].mean())
             except Exception as e:
                 continue
-        assert j == 0
+        assert j == 9
 
         print('{}, ${:.3f} \pm {:.3f}$'
               .format(method,
@@ -660,57 +658,51 @@ def plotLoss(base, step, name='model_holdout_losses'):
 
         model, ndata, cr, icr = method.split('_')
         if model not in data.keys():
-            data[model] = {'cr': [],
-                           'icr': [],
-                           'both': []}
+            data[model] = {}
         ndata = int(ndata.removeprefix('ndata'))
         cr = float(cr.removeprefix('cr'))
         icr = float(icr.removeprefix('icr'))
-        if cr == 0 and icr == 0:
-            data[model]['cr'].append([cr, np.mean(test_loss), stats.sem(test_loss)])
-            data[model]['icr'].append([icr, np.mean(test_loss), stats.sem(test_loss)])
-        elif cr > 0 and icr == 0:
-            data[model]['cr'].append([cr, np.mean(test_loss), stats.sem(test_loss)])
-            if cr == 1:
-                data[model]['both'].append([icr, np.mean(test_loss), stats.sem(test_loss)])
-        elif cr == 0 and icr > 0:
-            data[model]['icr'].append([icr, np.mean(test_loss), stats.sem(test_loss)])
-            if icr == 1:
-                data[model]['both'].append([icr, np.mean(test_loss), stats.sem(test_loss)])
-        elif cr + icr == 1:
-            data[model]['both'].append([icr, np.mean(test_loss), stats.sem(test_loss)])
-        i += 1
+        data[model][(cr, icr, 1 - cr - icr)] = np.mean(test_loss)
+        if np.mean(test_loss) < vmin:
+            vmin = np.mean(test_loss)
 
-    for r in ['cr', 'icr', 'both']:
-        plt.style.use('ggplot')
-        plt.figure(dpi=300)
+    interval = 0.125
+    scale = int(1 / 0.125)
+    for model in data.keys():
+        keys = list(data[model].keys())
+        for key in keys:
+            scaled_key = tuple((np.array(key) / interval).astype(int))
+            data[model][scaled_key] = data[model][key]
+            data[model].pop(key)
 
-        MEDIUM_SIZE = 12
-        BIGGER_SIZE = 14
+    data['diff'] = {}
+    for key in data['mlp']:
+        data['diff'][key] = data['dssz'][key] - data['mlp'][key]
 
-        plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
-        plt.rc('axes', labelsize=BIGGER_SIZE)  # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=MEDIUM_SIZE)  # fontsize of the tick labels
-        plt.rc('ytick', labelsize=MEDIUM_SIZE)  # fontsize of the tick labels
-        for method in data.keys():
-            d = data[method][r]
-            d = np.array(d)
-            d = d[d[:, 0].argsort()]
-            xs = d[:, 0]
-            plt.plot(xs, d[:, 1], label=method_map[method])
-            plt.fill_between(xs, d[:, 1] - d[:, 2], d[:, 1] + d[:, 2], alpha=0.2)
-        plt.legend(loc=0, facecolor='w', fontsize='x-large')
-        if r == 'cr':
-            plt.xlabel('extrinsic - correct')
-        elif r == 'icr':
-            plt.xlabel('extrinsic - incorrect')
-        elif r == 'both':
-            plt.xlabel('correct - incorrect')
-        plt.ylabel('test sr')
-        plt.tight_layout()
-        plt.ylim(-0.05, 1.05)
-        plt.savefig(os.path.join(base, '{}.png'.format(r)), bbox_inches='tight', pad_inches=0)
-        plt.close()
+    for model in data.keys():
+        figure, tax = ternary.figure(scale=scale)
+        figure.set_size_inches(11, 8)
+        if model == 'diff':
+            tax.heatmap(data[model], style="hexagonal", cb_kwargs={'pad': 0.07})
+        else:
+            tax.heatmap(data[model], style="hexagonal", vmin=vmin, vmax=1, cb_kwargs={'pad': 0.07})
+        tax.boundary()
+        tax.clear_matplotlib_ticks()
+        tax.get_axes().axis('off')
+        tax.set_title(model, fontsize=20, y=1.06)
+        TickLabels = list(np.linspace(0, 1, 5, dtype=float))
+        tax.ticks(ticks=TickLabels, multiple=interval, tick_formats={'b': '%.2f', 'l': '%.2f', 'r': '%.2f'}, offset=0.015)
+
+        offset = 0.1
+        tax.right_corner_label("correct", fontsize=12)
+        tax.top_corner_label("incorrect", fontsize=12, offset=0.17)
+        tax.left_corner_label("extrinsic", fontsize=12)
+        tax.left_axis_label("extrinsic ratio", fontsize=12, offset=offset)
+        tax.right_axis_label("incorrect ratio", fontsize=12, offset=offset)
+        tax.bottom_axis_label("correct ratio", fontsize=12, offset=0)
+        tax.gridlines(multiple=1, color="black")
+        tax.savefig(os.path.join(base, '{}.png'.format(model)), bbox_inches='tight', pad_inches=0)
+        tax.show()
 
 
 if __name__ == '__main__':
@@ -720,5 +712,5 @@ if __name__ == '__main__':
     #         continue
     #     plotEvalCurve(os.path.join(base, sub), 10000, freq=500)
 
-    base = '/media/dian/hdd/mrun_results/swiss_roll/test'
+    base = '/media/dian/hdd/mrun_results/swiss_roll/2'
     plotLoss(base, 10000)

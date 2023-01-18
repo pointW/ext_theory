@@ -17,10 +17,10 @@ def noneOrStr(value):
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=str, default='mlp')
 parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--device', type=str, default='cuda')
+parser.add_argument('--device', type=str, default='cuda:1')
 parser.add_argument('--cr', type=float, default=0.)
 parser.add_argument('--icr', type=float, default=0.)
-parser.add_argument('--n_data', type=int, default=1000)
+parser.add_argument('--n_data', type=int, default=200)
 parser.add_argument('--log_pre', type=str, default='/tmp')
 
 args = parser.parse_args()
