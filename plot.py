@@ -648,7 +648,7 @@ def plotLoss(base, step, name='model_holdout_losses'):
                 # test_loss.append(np.sort(r)[:5].mean())
             except Exception as e:
                 continue
-        assert j == 0
+        assert j == 9
 
         print('{}, ${:.3f} \pm {:.3f}$'
               .format(method,
@@ -720,5 +720,5 @@ if __name__ == '__main__':
     #         continue
     #     plotEvalCurve(os.path.join(base, sub), 10000, freq=500)
 
-    base = '/media/dian/hdd/mrun_results/swiss_roll/test'
+    base = '/media/dian/hdd/mrun_results/swiss_roll/3'
     plotLoss(base, 10000)

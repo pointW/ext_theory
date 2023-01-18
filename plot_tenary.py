@@ -624,6 +624,9 @@ def plotLoss(base, step, name='model_holdout_losses'):
     vmin = 1
     colors = "bgrycmkw"
     method_map = {
+        'mlp': 'MLP',
+        'dssz': 'INV',
+        'invz': 'INV',
     }
     i = 0
 
@@ -689,7 +692,7 @@ def plotLoss(base, step, name='model_holdout_losses'):
         tax.boundary()
         tax.clear_matplotlib_ticks()
         tax.get_axes().axis('off')
-        tax.set_title(model, fontsize=20, y=1.06)
+        tax.set_title(method_map[model], fontsize=20, y=1.06)
         TickLabels = list(np.linspace(0, 1, 5, dtype=float))
         tax.ticks(ticks=TickLabels, multiple=interval, tick_formats={'b': '%.2f', 'l': '%.2f', 'r': '%.2f'}, offset=0.015)
 
@@ -712,5 +715,5 @@ if __name__ == '__main__':
     #         continue
     #     plotEvalCurve(os.path.join(base, sub), 10000, freq=500)
 
-    base = '/media/dian/hdd/mrun_results/swiss_roll/2'
+    base = '/media/dian/hdd/mrun_results/swiss_roll/3'
     plotLoss(base, 10000)

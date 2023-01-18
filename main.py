@@ -45,7 +45,7 @@ def getData(icr=0., cr=0., plot=False):
     assert 0 <= extr <= 1
     assert 0 <= icr <= 1
     assert 0 <= cr <= 1
-    max_r = 0.2
+    max_r = 0.05
     r = np.arange(0, max_r, max_r/100000)[:100000]
     nverts = len(r)
     assert nverts == 100000
@@ -91,14 +91,35 @@ def getData(icr=0., cr=0., plot=False):
     data_2[id_ic, :2] = data_1[id_ic, :2]
 
     if plot:
-        fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        axs[0].plot(data_1[data_1[:, 2] == 0][:, 0], data_1[data_1[:, 2] == 0][:, 1], 'o', color='r', markersize=0.1)
-        axs[0].plot(data_2[data_2[:, 2] == 0][:, 0], data_2[data_2[:, 2] == 0][:, 1], 'o', color='g', markersize=0.1)
-        axs[1].plot(data_1[data_1[:, 2] == 1][:, 0], data_1[data_1[:, 2] == 1][:, 1], 'o', color='r', markersize=0.1)
-        axs[1].plot(data_2[data_2[:, 2] == 1][:, 0], data_2[data_2[:, 2] == 1][:, 1], 'o', color='g', markersize=0.1)
+        # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+        # axs[0].plot(data_1[data_1[:, 2] == 0][:, 0], data_1[data_1[:, 2] == 0][:, 1], 'o', color='orange', markersize=0.1)
+        # axs[0].plot(data_2[data_2[:, 2] == 0][:, 0], data_2[data_2[:, 2] == 0][:, 1], 'o', color='blue', markersize=0.1)
+        # axs[1].plot(data_1[data_1[:, 2] == 1][:, 0], data_1[data_1[:, 2] == 1][:, 1], 'o', color='orange', markersize=0.1)
+        # axs[1].plot(data_2[data_2[:, 2] == 1][:, 0], data_2[data_2[:, 2] == 1][:, 1], 'o', color='blue', markersize=0.1)
+        #
+        # axs[2].plot(data_1[:, 0], data_1[:, 1], 'o', color='orange', markersize=0.1)
+        # axs[2].plot(data_2[:, 0], data_2[:, 1], 'o', color='blue', markersize=0.1)
+        # plt.tight_layout()
+        # plt.show()
 
-        axs[2].plot(data_1[:, 0], data_1[:, 1], 'o', color='r', markersize=0.1)
-        axs[2].plot(data_2[:, 0], data_2[:, 1], 'o', color='g', markersize=0.1)
+        fig = plt.figure(dpi=300, figsize=(5, 5))
+        plt.plot(data_1[:, 0], data_1[:, 1], 'o', color='orange', markersize=0.1)
+        plt.plot(data_2[:, 0], data_2[:, 1], 'o', color='blue', markersize=0.1)
+        plt.tight_layout()
+        plt.show()
+
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(data_1[:, 0], data_1[:, 1], data_1[:, 2], color='orange', s=0.1)
+        ax.scatter(data_2[:, 0], data_2[:, 1], data_2[:, 2], color='blue', s=0.1)
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        ax.set_xticks(np.linspace(-max_r*10, max_r*10, 5))
+        ax.set_yticks(np.linspace(-max_r*10, max_r*10, 5))
+        ax.set_zticks([0, 1])
+        ax.set_xlim(-max_r*10, max_r*10)
+        ax.set_ylim(-max_r*10, max_r*10)
         plt.tight_layout()
         plt.show()
         print(1)
@@ -212,7 +233,13 @@ def train():
 
 if __name__ == '__main__':
     # getData(0, 1, True)
-    # getData(0, 0.5)
+    # getData(1, 0, True)
+    getData(0, 0, True)
+    getData(0.5, 0.5, True)
+    getData(0.5, 0, True)
+    getData(0, 0.5, True)
+    getData(0.25, 0.5, True)
+
     # getData(0, 1)
     # getData(0.5, 0)
     # getData(1, 0)
@@ -226,8 +253,17 @@ if __name__ == '__main__':
     # for c, i in [(0.25, 0.25), (0.25, 0.5), (0.5, 0.25)]:
     # for c, i in [(0.125, 0.875)]:
     # for c, i in [(0, 0)]:
-    for c, i in [(0, 0), (0, 0.125), (0, 0.25), (0, 0.375), (0, 0.5), (0, 0.625), (0, 0.75), (0, 0.875), (0, 1),
-                 (0.125, 0.875), (0.125, 0.75), (0.125, 0.625), (0.125, 0.5), (0.125, 0.375), (0.125, 0.25), (0.125, 0.125), (0.125, 0),
+    # for c, i in [(0, 0), (0, 0.125), (0, 0.25), (0, 0.375), (0, 0.5), (0, 0.625), (0, 0.75), (0, 0.875), (0, 1),
+    #              (0.125, 0.875), (0.125, 0.75), (0.125, 0.625), (0.125, 0.5), (0.125, 0.375), (0.125, 0.25), (0.125, 0.125), (0.125, 0),
+    #              (0.25, 0.75), (0.25, 0.625), (0.25, 0.5), (0.25, 0.375), (0.25, 0.25), (0.25, 0.125), (0.25, 0),
+    #              (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25), (0.375, 0.125), (0.375, 0),
+    #              (0.5, 0.5), (0.5, 0.375), (0.5, 0.25), (0.5, 0.125), (0.5, 0),
+    #              (0.625, 0.375), (0.625, 0.25), (0.625, 0.125), (0.625, 0),
+    #              (0.75, 0.25), (0.75, 0.125), (0.75, 0),
+    #              (0.875, 0.125), (0.875, 0),
+    #              (1, 0)]:
+    # for c, i in [(0, 1)]:
+    for c, i in [(0.125, 0.875), (0.125, 0.75), (0.125, 0.625), (0.125, 0.5), (0.125, 0.375), (0.125, 0.25), (0.125, 0.125), (0.125, 0),
                  (0.25, 0.75), (0.25, 0.625), (0.25, 0.5), (0.25, 0.375), (0.25, 0.25), (0.25, 0.125), (0.25, 0),
                  (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25), (0.375, 0.125), (0.375, 0),
                  (0.5, 0.5), (0.5, 0.375), (0.5, 0.25), (0.5, 0.125), (0.5, 0),
