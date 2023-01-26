@@ -1,0 +1,7 @@
+numpy==1.21.2
+matplotlib==3.5.1
+tqdm
+more_itertools
+dill
+joblib
+e2cnn

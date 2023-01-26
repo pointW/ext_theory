@@ -1,5 +1,9 @@
 # This repo contains code for the ICML submission "A General Theory on Correct, Incorrect, and Extrinsic Equivariance"
 
+## Requirements
+1. Install PyTorch (recommended 1.10.2)
+1. `pip install -r requirements.txt`
+
 ## Swiss Roll Experiment
 ```
 cd spiral
@@ -14,7 +18,6 @@ python main.py
 ```
 
 ## Regression Experiment
-Regression experiment requires Pytorch and Numpy installation
 ```
 cd regression
 python main.py

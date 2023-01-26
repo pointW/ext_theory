@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+sys.path.append('..')
 import matplotlib.pyplot as plt
 import os
 import torch.nn.functional as F

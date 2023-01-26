@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./')
+sys.path.append('..')
 import matplotlib.pyplot as plt
 import os
 import torch.nn.functional as F
@@ -6,7 +9,13 @@ from tqdm import tqdm
 from square_networks import MLPDSSX, MLPNoX
 from square_parameters import *
 from logger import Logger
-from spiral.main import set_seed
+
+def set_seed(s):
+    np.random.seed(s)
+    torch.manual_seed(s)
+    torch.cuda.manual_seed(s)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def getData(mr=0., cr=0., plot=False):
     assert 0 <= mr <= 1
