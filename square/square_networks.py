@@ -1,7 +1,6 @@
 import torch
 from torch import nn
-import torch.nn.functional as F
-from networks import DSS
+from spiral.networks import DSS
 
 class MLPDSSX(nn.Module):
     def __init__(self, n_out=2, n_x_div=5):

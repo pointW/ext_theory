@@ -1,7 +1,4 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
-import torch
 import os
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -9,7 +6,7 @@ from tqdm import tqdm
 from square_networks import MLPDSSX, MLPNoX
 from square_parameters import *
 from logger import Logger
-from main import set_seed
+from spiral.main import set_seed
 
 def getData(mr=0., cr=0., plot=False):
     assert 0 <= mr <= 1

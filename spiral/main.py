@@ -1,7 +1,4 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
-import torch
 import os
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -18,29 +15,6 @@ def set_seed(s):
     torch.backends.cudnn.benchmark = False
 
 def getData(icr=0., cr=0., plot=False):
-    # r = np.arange(0, .09, 0.00001)
-    # nverts = len(r)
-    # theta = np.array(range(nverts)) * (2*np.pi)/(nverts-1)
-    # theta = 90*np.pi*r
-    # yy_1 = 10*r * np.sin(theta)
-    # xx_1 = 10*r * np.cos(theta)
-    # data_1 = np.stack((xx_1, yy_1, np.ones_like(xx_1) * 0), 1)
-    #
-    # yy_2 = 10*r * np.sin(theta + 3)
-    # xx_2 = 10*r * np.cos(theta + 3)
-    # data_2 = np.stack((xx_2, yy_2, np.ones_like(xx_1) * 1), 1)
-    #
-    # data_1 = torch.tensor(data_1)
-    # label_1 = torch.ones(data_1.shape[0]) * 0
-    # data_2 = torch.tensor(data_2)
-    # label_2 = torch.ones(data_2.shape[0]) * 1
-    #
-    # data = torch.cat([data_1, data_2], dim=0).float()
-    # label = torch.cat([label_1, label_2], dim=0).long()
-    #
-    # permutation = torch.tensor(np.random.permutation(data.shape[0]))
-    # data = data[permutation]
-    # label = label[permutation]
     extr = 1 - icr - cr
     assert 0 <= extr <= 1
     assert 0 <= icr <= 1
@@ -60,7 +34,6 @@ def getData(icr=0., cr=0., plot=False):
     data_2 = np.stack((xx_2, yy_2, np.ones_like(xx_1) * 1), 1)
 
     permutation = np.arange(len(r))
-    # permutation = torch.tensor(np.random.permutation(len(r)))
     n_chunk = 16
     chunks = np.split(permutation, n_chunk)
     n_correct_chunk = int(n_chunk * cr)
@@ -70,14 +43,10 @@ def getData(icr=0., cr=0., plot=False):
 
     n_c = len(r) * cr
     n_ic = len(r) * icr
-    n_expt = len(r) - n_c - n_ic
 
-    # id_c_1 = permutation[:int(n_c//2)]
-    # id_c_2 = permutation[int(n_c//2):int(n_c)]
     id_c_1 = c1_chunks
     id_c_2 = c2_chunks
     id_ic = permutation[int(n_c):int(n_c + n_ic)]
-    # id_expt = permutation[n_c + n_ic:]
 
     data_1[id_c_1, :2] = data_1[id_c_2, :2]
     data_1[id_c_1, 2] = 0
@@ -91,17 +60,6 @@ def getData(icr=0., cr=0., plot=False):
     data_2[id_ic, :2] = data_1[id_ic, :2]
 
     if plot:
-        # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-        # axs[0].plot(data_1[data_1[:, 2] == 0][:, 0], data_1[data_1[:, 2] == 0][:, 1], 'o', color='orange', markersize=0.1)
-        # axs[0].plot(data_2[data_2[:, 2] == 0][:, 0], data_2[data_2[:, 2] == 0][:, 1], 'o', color='blue', markersize=0.1)
-        # axs[1].plot(data_1[data_1[:, 2] == 1][:, 0], data_1[data_1[:, 2] == 1][:, 1], 'o', color='orange', markersize=0.1)
-        # axs[1].plot(data_2[data_2[:, 2] == 1][:, 0], data_2[data_2[:, 2] == 1][:, 1], 'o', color='blue', markersize=0.1)
-        #
-        # axs[2].plot(data_1[:, 0], data_1[:, 1], 'o', color='orange', markersize=0.1)
-        # axs[2].plot(data_2[:, 0], data_2[:, 1], 'o', color='blue', markersize=0.1)
-        # plt.tight_layout()
-        # plt.show()
-
         fig = plt.figure(dpi=300, figsize=(5, 5))
         plt.plot(data_1[:, 0], data_1[:, 1], 'o', color='orange', markersize=0.1)
         plt.plot(data_2[:, 0], data_2[:, 1], 'o', color='blue', markersize=0.1)
@@ -166,15 +124,6 @@ def train():
     test_data = data[n_train + n_holdout:n_train + 2 * n_holdout]
     test_label = label[n_train + n_holdout:n_train + 2 * n_holdout]
 
-    # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-    # axs[0].plot(train_data[train_data[:, 2] == 0][:, 0], train_data[train_data[:, 2] == 0][:, 1], 'o', color='r', markersize=0.1)
-    # axs[1].plot(train_data[train_data[:, 2] == 1][:, 0], train_data[train_data[:, 2] == 1][:, 1], 'o', color='g', markersize=0.1)
-    # axs[2].plot(train_data[train_data[:, 2] == 0][:, 0], train_data[train_data[:, 2] == 0][:, 1], 'o', color='r', markersize=0.1)
-    # axs[2].plot(train_data[train_data[:, 2] == 1][:, 0], train_data[train_data[:, 2] == 1][:, 1], 'o', color='g', markersize=0.1)
-    # plt.tight_layout()
-    # plt.show()
-    # print(1)
-
     min_valid_loss = 1e10
     epochs_no_improve = 0
     min_test_err = 1e10
@@ -182,7 +131,6 @@ def train():
     pbar = tqdm(total=max_epochs)
     for epoch in range(1, max_epochs + 1):
         train_idx = np.random.permutation(train_data.shape[0])
-        # it = tqdm(range(0, train_data.shape[0], batch_size))
         it = range(0, train_data.shape[0], batch_size)
         for start_pos in it:
             idx = train_idx[start_pos: start_pos + batch_size]
@@ -202,7 +150,6 @@ def train():
             network.eval()
             valid_data = valid_data.to(device)
             valid_out = network(valid_data)
-            # valid_loss = F.cross_entropy(valid_out, valid_gc.to(device))
             valid_loss = 1 - (valid_out.argmax(1) == valid_label.to(device)).sum() / valid_out.shape[0]
             valid_loss = valid_loss.item()
 
@@ -232,37 +179,7 @@ def train():
     del data, label
 
 if __name__ == '__main__':
-    # getData(0, 1, True)
-    # getData(1, 0, True)
-    getData(0, 0, True)
-    getData(0.5, 0.5, True)
-    getData(0.5, 0, True)
-    getData(0, 0.5, True)
-    getData(0.25, 0.5, True)
-
-    # getData(0, 1)
-    # getData(0.5, 0)
-    # getData(1, 0)
-    # getData(0.5, 0.5)
-
     global cr, icr, model
-    # for m in ['mlp', 'invz']:
-    # for m in ['dssz', 'mlp']:
-    #     model = m
-
-    # for c, i in [(0.25, 0.25), (0.25, 0.5), (0.5, 0.25)]:
-    # for c, i in [(0.125, 0.875)]:
-    # for c, i in [(0, 0)]:
-    # for c, i in [(0, 0), (0, 0.125), (0, 0.25), (0, 0.375), (0, 0.5), (0, 0.625), (0, 0.75), (0, 0.875), (0, 1),
-    #              (0.125, 0.875), (0.125, 0.75), (0.125, 0.625), (0.125, 0.5), (0.125, 0.375), (0.125, 0.25), (0.125, 0.125), (0.125, 0),
-    #              (0.25, 0.75), (0.25, 0.625), (0.25, 0.5), (0.25, 0.375), (0.25, 0.25), (0.25, 0.125), (0.25, 0),
-    #              (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25), (0.375, 0.125), (0.375, 0),
-    #              (0.5, 0.5), (0.5, 0.375), (0.5, 0.25), (0.5, 0.125), (0.5, 0),
-    #              (0.625, 0.375), (0.625, 0.25), (0.625, 0.125), (0.625, 0),
-    #              (0.75, 0.25), (0.75, 0.125), (0.75, 0),
-    #              (0.875, 0.125), (0.875, 0),
-    #              (1, 0)]:
-    # for c, i in [(0, 1)]:
     for c, i in [(0.125, 0.875), (0.125, 0.75), (0.125, 0.625), (0.125, 0.5), (0.125, 0.375), (0.125, 0.25), (0.125, 0.125), (0.125, 0),
                  (0.25, 0.75), (0.25, 0.625), (0.25, 0.5), (0.25, 0.375), (0.25, 0.25), (0.25, 0.125), (0.25, 0),
                  (0.375, 0.625), (0.375, 0.5), (0.375, 0.375), (0.375, 0.25), (0.375, 0.125), (0.375, 0),
@@ -271,12 +188,6 @@ if __name__ == '__main__':
                  (0.75, 0.25), (0.75, 0.125), (0.75, 0),
                  (0.875, 0.125), (0.875, 0),
                  (1, 0)]:
-    # for c, i in [(0, 0), (0, 0.25), (0, 0.5), (0, 0.75), (0, 1),
-    #              (0.25, 0.75), (0.25, 0.5), (0.25, 0.25), (0.25, 0),
-    #              (0.5, 0.5), (0.5, 0.25), (0.5, 0),
-    #              (0.75, 0.25), (0.75, 0),
-    #              (1, 0)]:
-    # for c, i in [(0, 0)]:
         cr, icr = c, i
 
         for s in range(10):
