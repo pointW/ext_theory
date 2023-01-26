@@ -8,7 +8,6 @@ import dill as pickle
 import json
 from tqdm import tqdm
 import numpy as np
-from parameters import args
 
 # Transition object
 
@@ -23,7 +22,7 @@ class Logger(object):
       - num_envs: Number of environments running concurrently
     '''
 
-    def __init__(self, log_dir, model, env='swiss_roll', log_dir_sub=None):
+    def __init__(self, log_dir, model, env='swiss_roll', log_dir_sub=None, seed=0):
         # Logging variables
         self.env = env
         self.model = model
@@ -35,7 +34,7 @@ class Logger(object):
             self.base_dir = os.path.join(log_dir, '{}_{}_{}'.format(self.model, self.env, timestamp.strftime('%Y-%m-%d.%H:%M:%S')))
         else:
             self.base_dir = os.path.join(log_dir, log_dir_sub)
-        self.base_dir += 'seed{}'.format(args.seed)
+        self.base_dir += 'seed{}'.format(seed)
         print('Creating logging session at: {}'.format(self.base_dir))
 
         # Create subdirs to save important run info

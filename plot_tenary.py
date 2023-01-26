@@ -682,17 +682,22 @@ def plotLoss(base, step, name='model_holdout_losses'):
     for key in data['mlp']:
         data['diff'][key] = data['dssz'][key] - data['mlp'][key]
 
+    data['UB'] = {}
+    for key in data['mlp']:
+        data['UB'][key] = 1 - 0.5*key[1]*interval
+
     for model in data.keys():
         figure, tax = ternary.figure(scale=scale)
         figure.set_size_inches(11, 8)
         if model == 'diff':
-            tax.heatmap(data[model], style="hexagonal", cb_kwargs={'pad': 0.07})
+            tax.heatmap(data[model], style="hexagonal", cb_kwargs={'pad': 0.07}, cbarlabel='Test Success Rate')
         else:
-            tax.heatmap(data[model], style="hexagonal", vmin=vmin, vmax=1, cb_kwargs={'pad': 0.07})
+            tax.heatmap(data[model], style="hexagonal", vmin=vmin, vmax=1, cb_kwargs={'pad': 0.07}, cbarlabel='Test Success Rate')
+            # tax.cbar.set_label('123')
         tax.boundary()
         tax.clear_matplotlib_ticks()
         tax.get_axes().axis('off')
-        tax.set_title(method_map[model], fontsize=20, y=1.06)
+        tax.set_title(method_map[model] if model in method_map else model, fontsize=20, y=1.06)
         TickLabels = list(np.linspace(0, 1, 5, dtype=float))
         tax.ticks(ticks=TickLabels, multiple=interval, tick_formats={'b': '%.2f', 'l': '%.2f', 'r': '%.2f'}, offset=0.015)
 

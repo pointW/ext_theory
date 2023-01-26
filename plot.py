@@ -692,6 +692,10 @@ def plotLoss(base, step, name='model_holdout_losses'):
         plt.rc('axes', labelsize=BIGGER_SIZE)  # fontsize of the x and y labels
         plt.rc('xtick', labelsize=MEDIUM_SIZE)  # fontsize of the tick labels
         plt.rc('ytick', labelsize=MEDIUM_SIZE)  # fontsize of the tick labels
+
+        if r == 'both':
+            plt.plot([0, 1], [1, 0.5], label='INV UB', c='g')
+
         for method in data.keys():
             d = data[method][r]
             d = np.array(d)
@@ -699,6 +703,7 @@ def plotLoss(base, step, name='model_holdout_losses'):
             xs = d[:, 0]
             plt.plot(xs, d[:, 1], label=method_map[method])
             plt.fill_between(xs, d[:, 1] - d[:, 2], d[:, 1] + d[:, 2], alpha=0.2)
+
         plt.legend(loc=0, facecolor='w', fontsize='x-large')
         if r == 'cr':
             plt.xlabel('extrinsic - correct')
@@ -706,6 +711,7 @@ def plotLoss(base, step, name='model_holdout_losses'):
             plt.xlabel('extrinsic - incorrect')
         elif r == 'both':
             plt.xlabel('correct - incorrect')
+
         plt.ylabel('test sr')
         plt.tight_layout()
         plt.ylim(-0.05, 1.05)
