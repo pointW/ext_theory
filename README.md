@@ -12,3 +12,10 @@ python main.py --model=mlp // unconstained network
 cd square
 python main.py 
 ```
+
+## Regression Experiment
+Regression experiment requires Pytorch and Numpy installation
+```
+cd regression
+python main.py
+```
