@@ -10,7 +10,7 @@ from torchvision.transforms import Resize
 from torchvision.transforms import ToTensor
 from torchvision.transforms import Compose
 from torchvision.datasets import MNIST
-
+import sys
 import numpy as np
 
 from PIL import Image
@@ -351,7 +351,7 @@ def train():
     device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
     train_size = 50000
-    test_size = 10000
+    test_size = 50000
     max_epochs = 50
     max_no_improve = 10
 
@@ -359,18 +359,18 @@ def train():
 
     # model = C4CNN().to(device)
     # model = C8CNN().to(device)
-    # model = C2CNN().to(device)
+    model = C2CNN().to(device)
     # model = TriCNN().to(device)
-    model = D4CNN().to(device)
+    # model = D4CNN().to(device)
     # model = CNN().to(device)
     # model = D1CNN().to(device)
 
-    # mnist_train = MnistRotDataset(mode='train', transform=totensor)
-    # mnist_test = MnistRotDataset(mode='test', transform=totensor)
+    mnist_train = MnistRotDataset(mode='train', transform=totensor)
+    mnist_test = MnistRotDataset(mode='test', transform=totensor)
     # mnist_train = MNIST692547(root='mnist', train=True, download=True, transform=totensor)
     # mnist_test = MNIST692547(root='mnist', train=False, download=True, transform=totensor)
-    mnist_train = MNIST(root='mnist', train=True, download=True, transform=totensor)
-    mnist_test = MNIST(root='mnist', train=False, download=True, transform=totensor)
+    # mnist_train = MNIST(root='mnist', train=True, download=True, transform=totensor)
+    # mnist_test = MNIST(root='mnist', train=False, download=True, transform=totensor)
 
     subsample_train_indices = torch.randperm(len(mnist_train.data))[:train_size]
     subsample_test_indices = torch.randperm(len(mnist_test.data))[:test_size]
@@ -476,6 +476,7 @@ def train():
     return best_acc, best_per_acc, pred_count
 
 if __name__ == '__main__':
+    # np.set_printoptions(threshold=np.inf, linewidth=200)
     all_best = []
     all_best_per = []
     all_pred_count = np.zeros((10, 10))
@@ -488,4 +489,6 @@ if __name__ == '__main__':
         all_pred_count += pred_count
         all_best_per_avg = np.array(all_best_per).mean(0).round(2).tolist()
         print(f'{np.mean(all_best).round(2)}, {all_best_per_avg}')
-        print(all_pred_count.astype(int))
+        # print(all_pred_count.astype(int))
+        for row in all_pred_count.astype(int):
+            print(row.tolist())
