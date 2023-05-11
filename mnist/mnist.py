@@ -350,19 +350,22 @@ def set_seed(s):
 def train():
     device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
 
-    train_size = 50000
-    test_size = 50000
-    max_epochs = 50
-    max_no_improve = 10
+    train_size = 5000
+    valid_size = 1000
+    test_size = 1000
+
+    min_epochs = 50
+    max_epochs = 1000
+    max_no_improve = 50
 
     totensor = ToTensor()
 
     # model = C4CNN().to(device)
     # model = C8CNN().to(device)
-    model = C2CNN().to(device)
+    # model = C2CNN().to(device)
     # model = TriCNN().to(device)
     # model = D4CNN().to(device)
-    # model = CNN().to(device)
+    model = CNN().to(device)
     # model = D1CNN().to(device)
 
     mnist_train = MnistRotDataset(mode='train', transform=totensor)
@@ -372,108 +375,92 @@ def train():
     # mnist_train = MNIST(root='mnist', train=True, download=True, transform=totensor)
     # mnist_test = MNIST(root='mnist', train=False, download=True, transform=totensor)
 
+    assert train_size + valid_size <= len(mnist_train.data)
+    assert test_size <= len(mnist_test.data)
+
     subsample_train_indices = torch.randperm(len(mnist_train.data))[:train_size]
+    subsample_valid_indices = torch.randperm(len(mnist_train.data))[train_size:train_size+valid_size]
     subsample_test_indices = torch.randperm(len(mnist_test.data))[:test_size]
 
     train_loader = torch.utils.data.DataLoader(mnist_train, batch_size=256, sampler=SubsetRandomSampler(subsample_train_indices))
+    valid_loader = torch.utils.data.DataLoader(mnist_train, batch_size=2048, sampler=SubsetRandomSampler(subsample_valid_indices))
     test_loader = torch.utils.data.DataLoader(mnist_test, batch_size=2048, sampler=SubsetRandomSampler(subsample_test_indices))
 
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-5, weight_decay=1e-5)
 
     no_improve = 0
-    best_acc = 0
-    best_per_acc = [0 for _ in range(10)]
+    best_valid_acc = 0
+    best_test_acc = 0
+    best_test_per_acc = [0 for _ in range(10)]
+    best_test_pred_count = np.zeros((10, 10))
     pbar = tqdm(total=max_epochs)
     for epoch in range(max_epochs):
         model.train()
         for i, (x, t) in enumerate(train_loader):
             optimizer.zero_grad()
-
             x = x.to(device)
             t = t.to(device)
-
             y = model(x)
-
             loss = loss_function(y, t)
-
             loss.backward()
-
             optimizer.step()
-
         pbar.update()
 
-        # total = 0
-        # correct = 0
-        # per_total = [0 for _ in range(10)]
-        # per_correct = [0 for _ in range(10)]
-        # with torch.no_grad():
-        #     model.eval()
-        #     for i, (x, t) in enumerate(test_loader):
-        #         x = x.to(device)
-        #         t = t.to(device)
-        #
-        #         y = model(x)
-        #
-        #         _, prediction = torch.max(y.data, 1)
-        #         total += t.shape[0]
-        #         correct += (prediction == t).sum().item()
-        #
-        #         for j in range(10):
-        #             per_total[j] += (t == j).sum().item()
-        #             per_correct[j] += (prediction == t)[t == j].sum().item()
-        #
-        #     per_acc = (np.array(per_correct) / np.array(per_total) * 100.).round(2).tolist()
-        #     per_acc_dic = {}
-        #     for j in range(10):
-        #         per_acc_dic[j] = per_acc[j]
-        #
-        #     acc = np.round(correct / total * 100., 2)
-        #     if acc > best_acc:
-        #         best_acc = acc
-        #         best_per_acc = per_acc_dic
-        #         no_improve = 0
-        #     else:
-        #         no_improve += 1
-        #         if no_improve >= max_no_improve:
-        #             break
-        #     pbar.set_description('epoch {} | no imp: {}, test: {}, best: {}, digit : {}'.
-        #                          format(epoch, no_improve, acc, best_acc, best_per_acc))
-    total = 0
-    correct = 0
-    per_total = [0 for _ in range(10)]
-    per_correct = [0 for _ in range(10)]
-    pred_count = np.zeros((10, 10))
-    with torch.no_grad():
-        model.eval()
-        for i, (x, t) in enumerate(test_loader):
-            x = x.to(device)
-            t = t.to(device)
+        valid_total = 0
+        valid_correct = 0
+        test_total = 0
+        test_correct = 0
+        test_per_total = [0 for _ in range(10)]
+        test_per_correct = [0 for _ in range(10)]
+        test_pred_count = np.zeros((10, 10))
+        with torch.no_grad():
+            model.eval()
+            for i, (x, t) in enumerate(valid_loader):
+                x = x.to(device)
+                t = t.to(device)
+                y = model(x)
+                _, prediction = torch.max(y.data, 1)
+                valid_total += t.shape[0]
+                valid_correct += (prediction == t).sum().item()
 
-            y = model(x)
+            for i, (x, t) in enumerate(test_loader):
+                x = x.to(device)
+                t = t.to(device)
 
-            _, prediction = torch.max(y.data, 1)
-            total += t.shape[0]
-            correct += (prediction == t).sum().item()
+                y = model(x)
 
-            for j in range(10):
-                per_total[j] += (t == j).sum().item()
-                per_correct[j] += (prediction == t)[t == j].sum().item()
-                pred_count[j] += prediction[t == j].bincount(minlength=10).cpu().numpy()
+                _, prediction = torch.max(y.data, 1)
+                test_total += t.shape[0]
+                test_correct += (prediction == t).sum().item()
 
-        per_acc = (np.array(per_correct) / np.array(per_total) * 100.).round(2).tolist()
-        per_acc_dic = {}
+                for j in range(10):
+                    test_per_total[j] += (t == j).sum().item()
+                    test_per_correct[j] += (prediction == t)[t == j].sum().item()
+                    test_pred_count[j] += prediction[t == j].bincount(minlength=10).cpu().numpy()
+
+        test_per_acc = (np.array(test_per_correct) / np.array(test_per_total) * 100.).round(2).tolist()
+        test_per_acc_dic = {}
         for j in range(10):
-            per_acc_dic[j] = per_acc[j]
+            test_per_acc_dic[j] = test_per_acc[j]
 
-        acc = np.round(correct / total * 100., 2)
-
-        best_acc = acc
-        best_per_acc = per_acc_dic
-        pbar.set_description('test: {}, digit : {}'.
-                             format(best_acc, best_per_acc))
+        test_acc = np.round(test_correct / test_total * 100., 2)
+        valid_acc = test_correct / test_total
+        if valid_acc > best_valid_acc:
+            no_improve = 0
+            best_valid_acc = valid_acc
+            best_test_acc = test_acc
+            best_test_per_acc = test_per_acc_dic
+            best_test_pred_count = test_pred_count
+        else:
+            no_improve += 1
+        pbar.set_description('epoch: {}, valid: {}, no improve: {}, best test: {}'.
+                             format(epoch, valid_acc, no_improve, best_test_acc))
+        pbar.update()
+        if no_improve >= max_no_improve and epoch > min_epochs:
+            break
     pbar.close()
-    return best_acc, best_per_acc, pred_count
+    return best_test_acc, best_test_per_acc, best_test_pred_count
 
 if __name__ == '__main__':
     # np.set_printoptions(threshold=np.inf, linewidth=200)
