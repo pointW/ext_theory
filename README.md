@@ -22,3 +22,17 @@ python main.py
 cd regression
 python main.py
 ```
+
+## MNIST Experiment
+```
+cd mnist
+python main.py --model=d4 // D4 network
+python main.py --model=cnn // CNN networ
+```
+
+## Printed Digit Experiment
+```
+cd print_digit
+python main.py --model=d4 // D4 network
+python main.py --model=cnn // CNN networ
+```

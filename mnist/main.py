@@ -1,5 +1,8 @@
+import sys
+sys.path.append('./')
+sys.path.append('..')
+from parameters import model, device
 import torch
-
 from e2cnn import gspaces
 from e2cnn import nn
 from tqdm import tqdm
@@ -10,9 +13,7 @@ from torchvision.transforms import Resize
 from torchvision.transforms import ToTensor
 from torchvision.transforms import Compose
 from torchvision.datasets import MNIST
-import sys
 import numpy as np
-
 from PIL import Image
 
 class MnistRotDataset(Dataset):
@@ -348,8 +349,6 @@ def set_seed(s):
     torch.backends.cudnn.benchmark = False
 
 def train():
-    device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
-
     train_size = 5000
     valid_size = 1000
     test_size = 1000
@@ -360,13 +359,22 @@ def train():
 
     totensor = ToTensor()
 
-    # model = C4CNN().to(device)
-    # model = C8CNN().to(device)
-    # model = C2CNN().to(device)
-    # model = TriCNN().to(device)
-    # model = D4CNN().to(device)
-    model = CNN().to(device)
-    # model = D1CNN().to(device)
+    assert model in ['c4', 'c8', 'c2', 'd4', 'cnn', 'd1']
+
+    if model == 'c4':
+        network = C4CNN().to(device)
+    elif model == 'c8':
+        network = C8CNN().to(device)
+    elif model == 'c2':
+        network = C2CNN().to(device)
+    elif model == 'd4':
+        network = D4CNN().to(device)
+    elif model == 'cnn':
+        network = CNN().to(device)
+    elif model == 'd1':
+        network = D1CNN().to(device)
+    else:
+        raise NotImplementedError
 
     mnist_train = MnistRotDataset(mode='train', transform=totensor)
     mnist_test = MnistRotDataset(mode='test', transform=totensor)
@@ -387,7 +395,7 @@ def train():
     test_loader = torch.utils.data.DataLoader(mnist_test, batch_size=2048, sampler=SubsetRandomSampler(subsample_test_indices))
 
     loss_function = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-5, weight_decay=1e-5)
+    optimizer = torch.optim.Adam(network.parameters(), lr=5e-5, weight_decay=1e-5)
 
     no_improve = 0
     best_valid_acc = 0
@@ -396,12 +404,12 @@ def train():
     best_test_pred_count = np.zeros((10, 10))
     pbar = tqdm(total=max_epochs)
     for epoch in range(max_epochs):
-        model.train()
+        network.train()
         for i, (x, t) in enumerate(train_loader):
             optimizer.zero_grad()
             x = x.to(device)
             t = t.to(device)
-            y = model(x)
+            y = network(x)
             loss = loss_function(y, t)
             loss.backward()
             optimizer.step()
@@ -415,11 +423,11 @@ def train():
         test_per_correct = [0 for _ in range(10)]
         test_pred_count = np.zeros((10, 10))
         with torch.no_grad():
-            model.eval()
+            network.eval()
             for i, (x, t) in enumerate(valid_loader):
                 x = x.to(device)
                 t = t.to(device)
-                y = model(x)
+                y = network(x)
                 _, prediction = torch.max(y.data, 1)
                 valid_total += t.shape[0]
                 valid_correct += (prediction == t).sum().item()
@@ -428,7 +436,7 @@ def train():
                 x = x.to(device)
                 t = t.to(device)
 
-                y = model(x)
+                y = network(x)
 
                 _, prediction = torch.max(y.data, 1)
                 test_total += t.shape[0]
