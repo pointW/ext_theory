@@ -25,7 +25,7 @@
     # incorrect equivariant using flip equivariance
     python main.py --env=close_loop_block_arranging --model=equi_d1 --correct_ratio=0.6
     # cnn baseline
-    python main.py --env=close_loop_block_arranging --model=cnn
+    python main.py --env=close_loop_block_arranging --model=cnn --correct_ratio=0.6
     ```
 ## Note
 * Add --render=t argument to view real-time visualization
