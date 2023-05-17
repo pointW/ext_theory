@@ -1,9 +1,9 @@
 # Robotic experiment instructions
 
-1. Be sure you already installed all libraries required by swiss_roll. 
+1. Be sure you already installed all libraries required in ext_theory. 
 2. Install dependencies
    ```
-   cd swiss_roll/robotic/scripts
+   cd ext_theory/robotic/scripts
    pip install -r requirements.txt
    ```
 3. Add environment path
@@ -20,7 +20,7 @@
 5. Run incorrect equivariance experiment
    * adjust --correct_ratio argument to change the ratio, e.g., --correct_ratio=0.6 means 60% correct data and 40% incorrect data 
     ```
-    cd swiss_roll/robotic/scripts
+    cd ext_theory/robotic/scripts
     # incorrect equivariant using flip equivariance
     python main.py --env=close_loop_block_arranging --model=equi_d1 --correct_ratio=0.6
     # cnn baseline
