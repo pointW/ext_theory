@@ -1,15 +1,14 @@
 # Robotic experiment instructions
 
 1. Be sure you already installed all libraries required by swiss_roll. 
-1. Clone the environment repo
-    ```
-    git clone https://github.com/SaulBatman/BulletArm.git -b ext_equi
-    export PYTHONPATH=/path/to/BulletArm/:$PYTHONPATH
-    ```
-3. Install dependencies
+2. Install dependencies
    ```
    cd swiss_roll/robotic/scripts
    pip install -r requirements.txt
+   ```
+3. Add environment path
+   ```
+   export PYTHONPATH=/path/to/ext_theory/robotic/BulletArm:$PYTHONPATH
    ```
 4. Run harmful extrinsic equivariance experiment
     ```
