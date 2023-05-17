@@ -1,4 +1,4 @@
-# This repo contains code for the ICML submission "A General Theory on Correct, Incorrect, and Extrinsic Equivariance"
+# This repo contains code for the NeurIPS submission "A General Theory on Correct, Incorrect, and Extrinsic Equivariance"
 
 ## Requirements
 1. Install PyTorch (recommended 1.10.2)
@@ -36,3 +36,9 @@ cd print_digit
 python main.py --model=d4 // D4 network
 python main.py --model=cnn // CNN networ
 ```
+
+## Robotic Experiment
+```
+cd robotic
+```
+See the README.md in the robotic subfolder.
